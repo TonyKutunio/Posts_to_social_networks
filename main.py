@@ -9,8 +9,13 @@ import logging
 
 logger = logging.getLogger("Facebook Requests Response")
 
-
-def post_to_vk(picture_path, text):
+def post_to_vk(picture_path,
+               text,
+               vk_login,
+               vk_password,
+               vk_access_token,
+               vk_group_id,
+               vk_user_id):
     vk_session = vk_api.VkApi(vk_login,
                               vk_password,
                               token=vk_access_token)
@@ -27,7 +32,10 @@ def post_to_vk(picture_path, text):
                  attachments=attachments)
 
 
-def post_to_fb(picture_path, text):
+def post_to_fb(picture_path,
+               text,
+               fb_token,
+               fb_group_id):
     url = f"https://graph.facebook.com/v2.11/{fb_group_id}/photos"
 
     data = {'caption': text,
@@ -40,11 +48,15 @@ def post_to_fb(picture_path, text):
         response.raise_for_status()
 
 
-def post_to_telegram(picture_path, text):
+def post_to_telegram(picture_path,
+                     text,
+                     tg_bot_token,
+                     tg_chanel_name):
     bot = telegram.Bot(token=tg_bot_token)
-    bot.send_photo(chat_id=tg_chanel_name,
-                   photo=open(picture_path, 'rb'))
-    bot.send_message(chat_id=tg_chanel_name, text=text)
+    with open(picture_path, 'rb') as f:
+        bot.send_photo(chat_id=tg_chanel_name,
+                       photo=f)
+        bot.send_message(chat_id=tg_chanel_name, text=text)
 
 
 def get_argument_parser():
@@ -79,15 +91,25 @@ if __name__ == '__main__':
     tg_bot_token = os.getenv('TG_BOT_TOKEN')
     tg_chanel_name = os.getenv('TG_CHANNEL_NAME')
 
-
     parser = get_argument_parser()
     args = parser.parse_args()
     picture_path = args.file_path
     text = args.text
 
-    post_to_vk(picture_path, text)
-    post_to_fb(picture_path, text)
-    post_to_telegram(picture_path, text)
+    post_to_vk(picture_path,
+               text,
+               vk_login,
+               vk_password,
+               vk_access_token,
+               vk_group_id,
+               vk_user_id)
 
+    post_to_fb(picture_path,
+               text,
+               fb_token,
+               fb_group_id)
 
-
+    post_to_telegram(picture_path,
+                     text,
+                     tg_bot_token,
+                     tg_chanel_name)
